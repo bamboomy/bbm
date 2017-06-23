@@ -24,11 +24,6 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
-import android.text.InputType;
-import android.widget.ArrayAdapter;
-import android.widget.EditText;
-
-import org.bamboomy.memdicez.share.ShareActivity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +35,7 @@ public class BlueToothDialog extends DialogFragment {
 
     private String name = "";
     private String[] names;
+    private List<String> devicesList;
 
     public void setActivity(MainActivity activity) {
         this.activity = activity;
@@ -49,20 +45,15 @@ public class BlueToothDialog extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
-        final String[] names = new String[7];
+        getNames();
 
-        for (int i = 0; i < 5; i++) {
+        final String[] names = devicesList.toArray(new String[devicesList.size()]);
 
-            names[i] = this.names[i];
-        }
-
-        names[5] = "generate others";
-        names[6] = "I want to choose my own";
-
-        builder.setTitle(R.string.choose_name)
+        builder.setTitle(R.string.choose_device)
                 .setItems(names, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
+                        /*
                         if (which == 5) {
                             activity.createNewNameDialog();
                         } else if (which == 6) {
@@ -72,11 +63,12 @@ public class BlueToothDialog extends DialogFragment {
 
                             activity.setName(name);
                         }
+                        */
                     }
                 });
         return builder.create();
     }
-
+/*
     private void showCustomNameDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(activity);
         builder.setTitle("How should we name you?");
@@ -115,19 +107,17 @@ public class BlueToothDialog extends DialogFragment {
 
         builder.show();
     }
+*/
 
     public void getNames() {
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
-        List<String> s = new ArrayList<>();
+        devicesList = new ArrayList<>();
 
         for(BluetoothDevice bt : pairedDevices) {
-            s.add(bt.getName());
+            devicesList.add(bt.getName());
         }
-
-        setListAdapter(new ArrayAdapter<String>(this, R.layout.list, s));
-        this.names = names;
-    }
+   }
 }

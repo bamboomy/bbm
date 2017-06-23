@@ -13,6 +13,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity {
 
     private TextView add;
+    private BlueToothDialog bluetoothDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Snackbar.make(add, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                bluetoothDialog = new BlueToothDialog();
 
+                bluetoothDialog.show(getSupportFragmentManager(), "test");
             }
         });
     }

@@ -1,15 +1,15 @@
 package bbm.bamboomy.org.bluetoothbatterymonitor;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -66,31 +66,43 @@ public class MainActivity extends AppCompatActivity {
         (new ServerThread(mBluetoothAdapter)).start();
     }
 
-    void addDevice(Device newDevice) {
+    void addDevice(BluetoothDevice newDevice) {
 
         container.addView(buildRowFromDevice(newDevice));
 
     }
 
-    private View buildRowFromDevice(Device device) {
+    private View buildRowFromDevice(final BluetoothDevice device) {
 
-        TableRow result = new TableRow(this);
+        final TableRow result = new TableRow(this);
 
         TextView textView = new TextView(this);
         textView.setText(device.getName());
 
         result.addView(textView);
 
-        ImageView imageview = new ImageView(this);
+        final ImageView eye  = new ImageView(this);
         int id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/eye", null, null);
-        imageview.setImageResource(id);
+        eye.setImageResource(id);
+
+        final TextView percentage = new TextView(this);
+
+        result.addView(textView);
 
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(500, 100);
-        imageview.setLayoutParams(layoutParams);
+        eye.setLayoutParams(layoutParams);
 
-        result.addView(imageview);
+        eye.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
-        imageview = new ImageView(this);
+                (new ClientThread(device, BluetoothAdapter.getDefaultAdapter(), eye, percentage)).start();
+            }
+        });
+
+        result.addView(eye);
+
+        ImageView imageview = new ImageView(this);
         id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/remove", null, null);
         imageview.setImageResource(id);
 
@@ -136,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
-        if(resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT){
+        if (resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT) {
 
         }
     }

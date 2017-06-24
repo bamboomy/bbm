@@ -34,7 +34,7 @@ public class BlueToothDialog extends DialogFragment {
     private MainActivity activity;
 
     private String name = "";
-    private List<String> devicesList;
+    private List<BluetoothDevice> devicesList;
 
     public void setActivity(MainActivity activity) {
         this.activity = activity;
@@ -46,15 +46,13 @@ public class BlueToothDialog extends DialogFragment {
 
         getNames();
 
-        final String[] names = devicesList.toArray(new String[devicesList.size()]);
+        final String[] names = new String[devicesList.size()];
 
         builder.setTitle(R.string.choose_device)
                 .setItems(names, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {
 
-                        name = names[which];
-
-                        activity.addDevice(new Device(name));
+                        activity.addDevice(devicesList.get(which));
                     }
                 });
 
@@ -109,7 +107,7 @@ public class BlueToothDialog extends DialogFragment {
         devicesList = new ArrayList<>();
 
         for (BluetoothDevice bt : pairedDevices) {
-            devicesList.add(bt.getName());
+            devicesList.add(bt);
         }
     }
 }

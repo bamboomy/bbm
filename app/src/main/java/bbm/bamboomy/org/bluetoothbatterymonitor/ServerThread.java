@@ -85,7 +85,7 @@ public class ServerThread extends Thread {
 
         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        int batteryPct = (int)(level / (float)scale);
+        int batteryPct = (int) (level / (float) scale);
 
         byte b = (byte) batteryPct;
         byte[] mmBuffer = new byte[1];
@@ -109,6 +109,4 @@ public class ServerThread extends Thread {
             //Log.e(TAG, "Could not close the connect socket", e);
         }
     }
-}
-
 }

@@ -79,13 +79,12 @@ public class ClientThread extends Thread {
         }
 
         byte[] mmBuffer = new byte[1];
-        int numBytes = 0; // bytes returned from read()
 
         try {
             // Read from the InputStream.
-            numBytes = mmInStream.read(mmBuffer);
+            mmInStream.read(mmBuffer);
 
-            activity.adaptRow(eye, percentage, numBytes);
+            activity.adaptRow(eye, percentage, mmBuffer[0]);
 
         } catch (IOException e) {
             //Log.d(TAG, "Input stream was disconnected", e);

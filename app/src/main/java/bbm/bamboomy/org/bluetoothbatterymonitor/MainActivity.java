@@ -69,15 +69,21 @@ public class MainActivity extends AppCompatActivity {
         result.addView(textView);
 
         ImageView imageview = new ImageView(this);
-        int id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/remove", null, null);
+        int id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/eye", null, null);
         imageview.setImageResource(id);
 
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(100, 100);
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(500, 100);
         imageview.setLayoutParams(layoutParams);
 
         result.addView(imageview);
-        layoutParams = new LinearLayout.LayoutParams(1000, 100);
-        result.setLayoutParams(layoutParams);
+
+        imageview = new ImageView(this);
+        id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/remove", null, null);
+        imageview.setImageResource(id);
+
+        imageview.setLayoutParams(layoutParams);
+
+        result.addView(imageview);
 
         return result;
     }

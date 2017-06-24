@@ -1,5 +1,8 @@
 package bbm.bamboomy.org.bluetoothbatterymonitor;
 
+import android.bluetooth.BluetoothAdapter;
+import android.content.Intent;
+
 /**
  * Created by Sander on 24-6-2017.
  */

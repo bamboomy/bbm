@@ -1,5 +1,7 @@
 package bbm.bamboomy.org.bluetoothbatterymonitor;
 
+import android.bluetooth.BluetoothAdapter;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -17,6 +19,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView add;
     private BlueToothDialog bluetoothDialog;
     private TableLayout container;
+
+    private final int REQUEST_ENABLE_BT = 7;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,9 +55,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         container = (TableLayout) findViewById(R.id.container);
+
+        listen();
     }
 
-    void addDevice(Device newDevice){
+    private void listen() {
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        (new ServerThread(mBluetoothAdapter)).start();
+    }
+
+    void addDevice(Device newDevice) {
 
         container.addView(buildRowFromDevice(newDevice));
 
@@ -108,5 +121,23 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    void connect() {
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (!mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if(resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT){
+
+        }
     }
 }

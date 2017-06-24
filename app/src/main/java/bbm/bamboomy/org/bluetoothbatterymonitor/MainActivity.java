@@ -1,19 +1,22 @@
 package bbm.bamboomy.org.bluetoothbatterymonitor;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity {
 
     private TextView add;
     private BlueToothDialog bluetoothDialog;
+    private TableLayout container;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +44,42 @@ public class MainActivity extends AppCompatActivity {
 
                 bluetoothDialog = new BlueToothDialog();
 
+                bluetoothDialog.setActivity(MainActivity.this);
+
                 bluetoothDialog.show(getSupportFragmentManager(), "test");
             }
         });
+
+        container = (TableLayout) findViewById(R.id.container);
+    }
+
+    void addDevice(Device newDevice){
+
+        container.addView(buildRowFromDevice(newDevice));
+
+    }
+
+    private View buildRowFromDevice(Device device) {
+
+        TableRow result = new TableRow(this);
+
+        TextView textView = new TextView(this);
+        textView.setText(device.getName());
+
+        result.addView(textView);
+
+        ImageView imageview = new ImageView(this);
+        int id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/remove", null, null);
+        imageview.setImageResource(id);
+
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(100, 100);
+        imageview.setLayoutParams(layoutParams);
+
+        result.addView(imageview);
+        layoutParams = new LinearLayout.LayoutParams(1000, 100);
+        result.setLayoutParams(layoutParams);
+
+        return result;
     }
 
     @Override

@@ -22,8 +22,9 @@ public class ClientThread extends Thread {
     private BluetoothAdapter mBluetoothAdapter;
     private ImageView eye;
     private TextView percentage;
+    private MainActivity activity;
 
-    ClientThread(BluetoothDevice device, BluetoothAdapter defaultAdapter, ImageView eye, TextView percentage) {
+    ClientThread(BluetoothDevice device, BluetoothAdapter defaultAdapter, ImageView eye, TextView percentage, MainActivity mainActivity) {
         // Use a temporary object that is later assigned to mmSocket
         // because mmSocket is final.
         BluetoothSocket tmp = null;
@@ -40,6 +41,7 @@ public class ClientThread extends Thread {
         this.mBluetoothAdapter = defaultAdapter;
         this.eye = eye;
         this.percentage = percentage;
+        this.activity = mainActivity;
     }
 
     public void run() {
@@ -68,8 +70,6 @@ public class ClientThread extends Thread {
 
     private void manageMyConnectedSocket(BluetoothSocket mmSocket) {
 
-        eye.setVisibility(View.GONE);
-
         InputStream mmInStream = null;
 
         try {
@@ -85,11 +85,11 @@ public class ClientThread extends Thread {
             // Read from the InputStream.
             numBytes = mmInStream.read(mmBuffer);
 
+            activity.adaptRow(eye, percentage, numBytes);
+
         } catch (IOException e) {
             //Log.d(TAG, "Input stream was disconnected", e);
         }
-
-        percentage.setText(numBytes + " %");
     }
 
     // Closes the client socket and causes the thread to finish.

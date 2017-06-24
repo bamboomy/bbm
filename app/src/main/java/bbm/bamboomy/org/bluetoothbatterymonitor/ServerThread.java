@@ -31,7 +31,7 @@ public class ServerThread extends Thread {
 
     private MainActivity activity;
 
-    public ServerThread(BluetoothAdapter mBluetoothAdapter) {
+    public ServerThread(BluetoothAdapter mBluetoothAdapter, MainActivity mainActivity) {
         // Use a temporary object that is later assigned to mmServerSocket
         // because mmServerSocket is final.
         BluetoothServerSocket tmp = null;
@@ -42,10 +42,8 @@ public class ServerThread extends Thread {
             //Log.e(TAG, "Socket's listen() method failed", e);
         }
         mmServerSocket = tmp;
-    }
 
-    void setActivity(MainActivity activity) {
-        this.activity = activity;
+        this.activity = mainActivity;
     }
 
     public void run() {
@@ -85,7 +83,7 @@ public class ServerThread extends Thread {
 
         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
-        int batteryPct = (int) (level / (float) scale);
+        int batteryPct = (int) (level * 100 / (float) scale);
 
         byte b = (byte) batteryPct;
         byte[] mmBuffer = new byte[1];

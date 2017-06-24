@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
-        (new ServerThread(mBluetoothAdapter)).start();
+        (new ServerThread(mBluetoothAdapter, this)).start();
     }
 
     void addDevice(BluetoothDevice newDevice) {
@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
         result.addView(textView);
 
-        final ImageView eye  = new ImageView(this);
+        final ImageView eye = new ImageView(this);
         int id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/eye", null, null);
         eye.setImageResource(id);
 
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                (new ClientThread(device, BluetoothAdapter.getDefaultAdapter(), eye, percentage)).start();
+                (new ClientThread(device, BluetoothAdapter.getDefaultAdapter(), eye, percentage, MainActivity.this)).start();
             }
         });
 
@@ -152,5 +152,17 @@ public class MainActivity extends AppCompatActivity {
         if (resultCode == RESULT_OK && requestCode == REQUEST_ENABLE_BT) {
 
         }
+    }
+
+    public void adaptRow(final ImageView eye, final TextView percentage, final int numBytes) {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                eye.setVisibility(View.GONE);
+                percentage.setText(numBytes + " %");
+            }
+        });
     }
 }

@@ -86,8 +86,9 @@ public class MainActivity extends AppCompatActivity {
         eye.setImageResource(id);
 
         final TextView percentage = new TextView(this);
+        percentage.setText("");
 
-        result.addView(textView);
+        result.addView(percentage);
 
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(500, 100);
         eye.setLayoutParams(layoutParams);

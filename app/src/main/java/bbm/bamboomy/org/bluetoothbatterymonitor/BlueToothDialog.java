@@ -48,6 +48,11 @@ public class BlueToothDialog extends DialogFragment {
 
         final String[] names = new String[devicesList.size()];
 
+        for(int i=0; i<devicesList.size(); i++){
+
+            names[i] = devicesList.get(i).getName();
+        }
+
         builder.setTitle(R.string.choose_device)
                 .setItems(names, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int which) {

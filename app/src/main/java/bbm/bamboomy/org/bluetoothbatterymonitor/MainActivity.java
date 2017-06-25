@@ -3,6 +3,7 @@ package bbm.bamboomy.org.bluetoothbatterymonitor;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -13,6 +14,10 @@ import android.widget.ImageView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,6 +62,53 @@ public class MainActivity extends AppCompatActivity {
         container = (TableLayout) findViewById(R.id.container);
 
         listen();
+
+        SharedPreferences prefs = getSharedPreferences("Devices", MODE_PRIVATE);
+        if (prefs.getBoolean("inited", false)) {
+            retrieveDevices(prefs);
+        }else {
+            initDevices(prefs);
+        }
+    }
+
+    private void retrieveDevices(SharedPreferences prefs) {
+
+        Set<String> pairedDevicesNames = prefs.getStringSet("deviceNames", new HashSet<String>());
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        for(String name : pairedDevicesNames){
+            for(BluetoothDevice device : pairedDevices){
+
+                if(device.getName().equals(name)){
+                    addDevice(device);
+                }
+            }
+        }
+    }
+
+    private void initDevices(SharedPreferences prefs) {
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
+
+        for (BluetoothDevice bt : pairedDevices) {
+            addDevice(bt);
+        }
+
+        SharedPreferences.Editor editor = prefs.edit();
+
+        Set<String> pairedDevicesNames = new HashSet<>();
+
+        for (BluetoothDevice bt : pairedDevices) {
+            pairedDevicesNames.add(bt.getName());
+        }
+
+        editor.putStringSet("deviceNames",pairedDevicesNames);
+
+        editor.putBoolean("inited", true);
+        editor.apply();
     }
 
     private void listen() {
@@ -69,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
     void addDevice(BluetoothDevice newDevice) {
 
         container.addView(buildRowFromDevice(newDevice));
-
     }
 
     private View buildRowFromDevice(final BluetoothDevice device) {
@@ -85,23 +136,17 @@ public class MainActivity extends AppCompatActivity {
         int id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/eye", null, null);
         eye.setImageResource(id);
 
-        final TextView percentage = new TextView(this);
-        percentage.setText("");
-
-        result.addView(percentage);
-
         TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(500, 100);
         eye.setLayoutParams(layoutParams);
 
-        eye.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                (new ClientThread(device, BluetoothAdapter.getDefaultAdapter(), eye, percentage, MainActivity.this)).start();
-            }
-        });
-
         result.addView(eye);
+
+        final TextView percentage = new TextView(this);
+        percentage.setText("");
+        percentage.setLayoutParams(layoutParams);
+        percentage.setVisibility(View.GONE);
+
+        result.addView(percentage);
 
         ImageView imageview = new ImageView(this);
         id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/remove", null, null);
@@ -110,6 +155,14 @@ public class MainActivity extends AppCompatActivity {
         imageview.setLayoutParams(layoutParams);
 
         result.addView(imageview);
+
+        result.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                (new ClientThread(device, BluetoothAdapter.getDefaultAdapter(), eye, percentage, MainActivity.this)).start();
+            }
+        });
 
         return result;
     }
@@ -162,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
                 eye.setVisibility(View.GONE);
                 percentage.setText(numBytes + " %");
+                percentage.setVisibility(View.VISIBLE);
             }
         });
     }

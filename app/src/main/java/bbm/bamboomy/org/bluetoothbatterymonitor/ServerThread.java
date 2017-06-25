@@ -85,9 +85,7 @@ public class ServerThread extends Thread {
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         int batteryPct = (int) (level * 100 / (float) scale);
 
-        batteryPct = 88;
-
-        byte b = (byte) batteryPct;
+         byte b = (byte) batteryPct;
         byte[] mmBuffer = new byte[1];
         mmBuffer[0] = b;
 

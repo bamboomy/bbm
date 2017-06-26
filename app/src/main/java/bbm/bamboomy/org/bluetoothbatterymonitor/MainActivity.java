@@ -7,6 +7,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,7 +17,6 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -64,25 +65,35 @@ public class MainActivity extends AppCompatActivity {
         listen();
 
         SharedPreferences prefs = getSharedPreferences("Devices", MODE_PRIVATE);
+
+        /*
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.remove("deviceNames");
+
+        editor.commit();
+        */
+
         if (prefs.getBoolean("inited", false)) {
             retrieveDevices(prefs);
-        }else {
+        } else {
             initDevices(prefs);
         }
     }
 
     private void retrieveDevices(SharedPreferences prefs) {
 
+        Log.d("bbm", "retrieving...");
+
         Set<String> pairedDevicesNames = prefs.getStringSet("deviceNames", new HashSet<String>());
 
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
-        for(String name : pairedDevicesNames){
-            for(BluetoothDevice device : pairedDevices){
+        for (String name : pairedDevicesNames) {
+            for (BluetoothDevice device : pairedDevices) {
 
-                if(device.getName().equals(name)){
-                    addDevice(device);
+                if (device.getName().equals(name)) {
+                    addDeviceWithoutPersist(device);
                 }
             }
         }
@@ -90,11 +101,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void initDevices(SharedPreferences prefs) {
 
+        Log.d("bbm", "initing...");
+
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
 
         for (BluetoothDevice bt : pairedDevices) {
-            addDevice(bt);
+            addDeviceWithoutPersist(bt);
         }
 
         SharedPreferences.Editor editor = prefs.edit();
@@ -105,10 +118,10 @@ public class MainActivity extends AppCompatActivity {
             pairedDevicesNames.add(bt.getName());
         }
 
-        editor.putStringSet("deviceNames",pairedDevicesNames);
+        editor.putStringSet("deviceNames", pairedDevicesNames);
 
         editor.putBoolean("inited", true);
-        editor.apply();
+        editor.commit();
     }
 
     private void listen() {
@@ -118,7 +131,25 @@ public class MainActivity extends AppCompatActivity {
         (new ServerThread(mBluetoothAdapter, this)).start();
     }
 
-    void addDevice(BluetoothDevice newDevice) {
+    void addDevice(BluetoothDevice newDevice){
+
+        SharedPreferences prefs = getSharedPreferences("Devices", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+
+        Set<String> pairedDevicesNames = prefs.getStringSet("deviceNames", new HashSet<String>());
+
+        pairedDevicesNames.add(newDevice.getName());
+
+        editor.clear();
+        editor.putBoolean("inited", true);
+        editor.putStringSet("deviceNames", pairedDevicesNames);
+
+        editor.commit();
+
+        addDeviceWithoutPersist(newDevice);
+    }
+
+    void addDeviceWithoutPersist(BluetoothDevice newDevice) {
 
         container.addView(buildRowFromDevice(newDevice));
     }
@@ -130,13 +161,16 @@ public class MainActivity extends AppCompatActivity {
         TextView textView = new TextView(this);
         textView.setText(device.getName());
 
+        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(300, 100);
+        textView.setLayoutParams(layoutParams);
+
         result.addView(textView);
 
         final ImageView eye = new ImageView(this);
         int id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/eye", null, null);
         eye.setImageResource(id);
 
-        TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(500, 100);
+        layoutParams = new TableRow.LayoutParams(200, 100);
         eye.setLayoutParams(layoutParams);
 
         result.addView(eye);
@@ -154,6 +188,41 @@ public class MainActivity extends AppCompatActivity {
 
         imageview.setLayoutParams(layoutParams);
 
+        imageview.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                container.removeView(result);
+
+                SharedPreferences prefs = getSharedPreferences("Devices", MODE_PRIVATE);
+                SharedPreferences.Editor editor = prefs.edit();
+
+                Set<String> pairedDevicesNames = prefs.getStringSet("deviceNames", new HashSet<String>());
+
+                String exailedOne = null;
+
+                Log.d("bbm","size before:"+pairedDevicesNames.size());
+
+                for(String name: pairedDevicesNames){
+
+                    if(name.equals(device.getName())){
+                        exailedOne = name;
+
+                        Log.d("bbm","going to remove: "+exailedOne);
+                    }
+                }
+
+                pairedDevicesNames.remove(exailedOne);
+
+                Log.d("bbm","size after:"+pairedDevicesNames.size());
+
+                editor.clear();
+                editor.putBoolean("inited", true);
+                editor.putStringSet("deviceNames", pairedDevicesNames);
+
+                editor.commit();
+            }
+        });
+
         result.addView(imageview);
 
         result.setOnClickListener(new View.OnClickListener() {
@@ -163,6 +232,8 @@ public class MainActivity extends AppCompatActivity {
                 (new ClientThread(device, BluetoothAdapter.getDefaultAdapter(), eye, percentage, MainActivity.this)).start();
             }
         });
+
+        result.setGravity(Gravity.CENTER_HORIZONTAL);
 
         return result;
     }

@@ -17,8 +17,13 @@ import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private TableLayout container;
 
     private final int REQUEST_ENABLE_BT = 7;
+
+    private DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -131,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         (new ServerThread(mBluetoothAdapter, this)).start();
     }
 
-    void addDevice(BluetoothDevice newDevice){
+    void addDevice(BluetoothDevice newDevice) {
 
         SharedPreferences prefs = getSharedPreferences("Devices", MODE_PRIVATE);
         SharedPreferences.Editor editor = prefs.edit();
@@ -182,6 +189,25 @@ public class MainActivity extends AppCompatActivity {
 
         result.addView(percentage);
 
+        final TextView time = new TextView(this);
+        time.setText("");
+        time.setLayoutParams(layoutParams);
+
+        final ClientThread clientThread = new ClientThread(device, BluetoothAdapter.getDefaultAdapter(),
+                eye, percentage, MainActivity.this, time);
+
+        clientThread.start();
+
+        result.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                clientThread.update();
+            }
+        });
+
+        result.addView(time);
+
         ImageView imageview = new ImageView(this);
         id = getResources().getIdentifier("bbm.bamboomy.org.bluetoothbatterymonitor:drawable/remove", null, null);
         imageview.setImageResource(id);
@@ -200,20 +226,20 @@ public class MainActivity extends AppCompatActivity {
 
                 String exailedOne = null;
 
-                Log.d("bbm","size before:"+pairedDevicesNames.size());
+                Log.d("bbm", "size before:" + pairedDevicesNames.size());
 
-                for(String name: pairedDevicesNames){
+                for (String name : pairedDevicesNames) {
 
-                    if(name.equals(device.getName())){
+                    if (name.equals(device.getName())) {
                         exailedOne = name;
 
-                        Log.d("bbm","going to remove: "+exailedOne);
+                        Log.d("bbm", "going to remove: " + exailedOne);
                     }
                 }
 
                 pairedDevicesNames.remove(exailedOne);
 
-                Log.d("bbm","size after:"+pairedDevicesNames.size());
+                Log.d("bbm", "size after:" + pairedDevicesNames.size());
 
                 editor.clear();
                 editor.putBoolean("inited", true);
@@ -224,16 +250,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         result.addView(imageview);
-
-        result.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                (new ClientThread(device, BluetoothAdapter.getDefaultAdapter(), eye, percentage, MainActivity.this)).start();
-            }
-        });
-
-        result.setGravity(Gravity.CENTER_HORIZONTAL);
 
         return result;
     }
@@ -289,5 +305,44 @@ public class MainActivity extends AppCompatActivity {
                 percentage.setVisibility(View.VISIBLE);
             }
         });
+    }
+
+    public void adaptTime(final TextView time, final Date lastUpdate) {
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+
+                Date now = Calendar.getInstance().getTime();
+
+                long diff = getDateDiff(lastUpdate, now, TimeUnit.MINUTES);
+
+                if (diff < 5) {
+
+                    if (diff == 1) {
+
+                        time.setText(diff + " minute");
+
+                    } else {
+                        time.setText(diff + " minutes");
+                    }
+                }else {
+                    time.setText(df.format(lastUpdate));
+                }
+            }
+        });
+    }
+
+    /**
+     * Get a diff between two dates
+     *
+     * @param date1    the oldest date
+     * @param date2    the newest date
+     * @param timeUnit the unit in which you want the diff
+     * @return the diff value, in the provided unit
+     */
+    public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
+        long diffInMillies = date2.getTime() - date1.getTime();
+        return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
     }
 }

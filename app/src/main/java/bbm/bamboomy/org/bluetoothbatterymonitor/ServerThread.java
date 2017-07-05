@@ -57,11 +57,12 @@ public class ServerThread extends Thread {
                 socket = mmServerSocket.accept();
             } catch (IOException e) {
 
-                try {
-                    sleep(5000);
-                } catch (InterruptedException e1) {
-                    e1.printStackTrace();
-                }
+            }
+
+            try {
+                sleep(5000);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
             }
 
             if (socket != null) {
@@ -95,6 +96,7 @@ public class ServerThread extends Thread {
         try {
 
             mmOutStream.write(mmBuffer);
+            socket.close();
 
         } catch (IOException e) {
 

@@ -4,7 +4,9 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -24,6 +26,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static bbm.bamboomy.org.bluetoothbatterymonitor.R.id.fab;
+
 public class MainActivity extends AppCompatActivity {
 
     private TextView add;
@@ -34,6 +38,8 @@ public class MainActivity extends AppCompatActivity {
 
     private DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
+    private ServerThread myServerThread;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,16 +47,18 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        //FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        /*
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent emailIntent = new Intent(Intent.ACTION_SENDTO, Uri
+                        .fromParts("mailto", "bamboomy@gmail.com", null));
+                emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Bluetooth Battery Monitor");
+                startActivity(Intent
+                        .createChooser(emailIntent, "Send feedback..."));
             }
         });
-        */
 
         add = (TextView) findViewById(R.id.add);
 
@@ -72,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume(){
+    protected void onResume() {
         super.onResume();
 
         SharedPreferences prefs = getSharedPreferences("Devices", MODE_PRIVATE);
@@ -137,7 +145,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void listen() {
 
-        (new ServerThread(this)).start();
+        myServerThread = new ServerThread(this);
+
+        myServerThread.start();
     }
 
     void addDevice(BluetoothDevice newDevice) {
@@ -309,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void  adaptTime(final TextView time, final Date lastUpdate) {
+    public void adaptTime(final TextView time, final Date lastUpdate) {
 
         runOnUiThread(new Runnable() {
             @Override
@@ -328,7 +338,7 @@ public class MainActivity extends AppCompatActivity {
                     } else {
                         time.setText(diff + " minutes");
                     }
-                }else {
+                } else {
                     time.setText(df.format(lastUpdate));
                 }
             }
@@ -346,5 +356,12 @@ public class MainActivity extends AppCompatActivity {
     public static long getDateDiff(Date date1, Date date2, TimeUnit timeUnit) {
         long diffInMillies = date2.getTime() - date1.getTime();
         return timeUnit.convert(diffInMillies, TimeUnit.MILLISECONDS);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        myServerThread.cancel();
     }
 }

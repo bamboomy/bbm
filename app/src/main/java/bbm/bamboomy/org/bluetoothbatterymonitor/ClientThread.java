@@ -29,6 +29,8 @@ public class ClientThread extends Thread {
     private Date lastUpdate = null;
     private BluetoothDevice device;
 
+    private String TAG = "bbm";
+
     ClientThread(BluetoothDevice device, BluetoothAdapter defaultAdapter, ImageView eye, TextView percentage, MainActivity mainActivity, TextView time) {
 
         this.device = device;
@@ -82,7 +84,7 @@ public class ClientThread extends Thread {
         try {
             mmInStream = mmSocket.getInputStream();
         } catch (IOException e) {
-            //Log.e(TAG, "Error occurred when creating input stream", e);
+            Log.e(TAG, "Error occurred when creating input stream", e);
         }
 
         byte[] mmBuffer = new byte[1];
@@ -95,8 +97,10 @@ public class ClientThread extends Thread {
 
             lastUpdate = Calendar.getInstance().getTime();
 
+            mmSocket.close();
+
         } catch (IOException e) {
-            //Log.d(TAG, "Input stream was disconnected", e);
+            Log.d(TAG, "Input stream was disconnected", e);
         }
     }
 
@@ -131,7 +135,7 @@ public class ClientThread extends Thread {
             try {
                 mmSocket.close();
             } catch (IOException closeException) {
-                //Log.e(TAG, "Could not close the client socket", closeException);
+                Log.e(TAG, "Could not close the client socket", closeException);
             }
             return;
         }

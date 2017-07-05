@@ -31,7 +31,10 @@ public class ServerThread extends Thread {
 
     private MainActivity activity;
 
-    public ServerThread(BluetoothAdapter mBluetoothAdapter, MainActivity mainActivity) {
+    public ServerThread(MainActivity mainActivity) {
+
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
         // Use a temporary object that is later assigned to mmServerSocket
         // because mmServerSocket is final.
         BluetoothServerSocket tmp = null;
@@ -39,7 +42,7 @@ public class ServerThread extends Thread {
             // MY_UUID is the app's UUID string, also used by the client code.
             tmp = mBluetoothAdapter.listenUsingRfcommWithServiceRecord(NAME, MY_UUID);
         } catch (IOException e) {
-            //Log.e(TAG, "Socket's listen() method failed", e);
+            Log.e(TAG, "Socket's listen() method failed", e);
         }
         mmServerSocket = tmp;
 
@@ -75,7 +78,7 @@ public class ServerThread extends Thread {
         try {
             mmOutStream = socket.getOutputStream();
         } catch (IOException e) {
-            //Log.e(TAG, "Error occurred when creating output stream", e);
+            Log.e(TAG, "Error occurred when creating output stream", e);
         }
 
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);

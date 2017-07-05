@@ -3,6 +3,7 @@ package bbm.bamboomy.org.bluetoothbatterymonitor;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -19,28 +20,18 @@ import static bbm.bamboomy.org.bluetoothbatterymonitor.ServerThread.MY_UUID;
 
 public class ClientThread extends Thread {
 
-    private final BluetoothSocket mmSocket;
+    private BluetoothSocket mmSocket;
     private BluetoothAdapter mBluetoothAdapter;
     private ImageView eye;
     private TextView percentage, time;
     private MainActivity activity;
     private boolean updateNow = true;
     private Date lastUpdate = null;
+    private BluetoothDevice device;
 
     ClientThread(BluetoothDevice device, BluetoothAdapter defaultAdapter, ImageView eye, TextView percentage, MainActivity mainActivity, TextView time) {
-        // Use a temporary object that is later assigned to mmSocket
-        // because mmSocket is final.
-        BluetoothSocket tmp = null;
 
-        try {
-            // Get a BluetoothSocket to connect with the given BluetoothDevice.
-            // MY_UUID is the app's UUID string, also used in the server code.
-            tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
-        } catch (IOException e) {
-            //Log.e(TAG, "Socket's create() method failed", e);
-        }
-        mmSocket = tmp;
-
+        this.device = device;
         this.mBluetoothAdapter = defaultAdapter;
         this.eye = eye;
         this.percentage = percentage;
@@ -77,6 +68,9 @@ public class ClientThread extends Thread {
     private void adaptTime() {
 
         if (lastUpdate != null) {
+
+            Log.d("bbm", "going to adapt time...");
+
             activity.adaptTime(time, lastUpdate);
         }
     }
@@ -116,6 +110,15 @@ public class ClientThread extends Thread {
     }
 
     void query() {
+
+        BluetoothSocket tmp = null;
+
+        try {
+            tmp = device.createRfcommSocketToServiceRecord(MY_UUID);
+        } catch (IOException e) {
+            //Log.e(TAG, "Socket's create() method failed", e);
+        }
+        mmSocket = tmp;
 
         mBluetoothAdapter.cancelDiscovery();
 

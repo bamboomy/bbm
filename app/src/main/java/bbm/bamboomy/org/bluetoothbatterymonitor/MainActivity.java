@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -70,6 +69,11 @@ public class MainActivity extends AppCompatActivity {
         container = (TableLayout) findViewById(R.id.container);
 
         listen();
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
 
         SharedPreferences prefs = getSharedPreferences("Devices", MODE_PRIVATE);
 
@@ -133,9 +137,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void listen() {
 
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        (new ServerThread(mBluetoothAdapter, this)).start();
+        (new ServerThread(this)).start();
     }
 
     void addDevice(BluetoothDevice newDevice) {
@@ -307,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    public void adaptTime(final TextView time, final Date lastUpdate) {
+    public void  adaptTime(final TextView time, final Date lastUpdate) {
 
         runOnUiThread(new Runnable() {
             @Override

@@ -26,8 +26,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import static bbm.bamboomy.org.bluetoothbatterymonitor.R.id.fab;
-
 public class MainActivity extends AppCompatActivity {
 
     private TextView add;
@@ -39,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private DateFormat df = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
 
     private ServerThread myServerThread;
+
+    private SoundThread soundThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +77,10 @@ public class MainActivity extends AppCompatActivity {
         container = (TableLayout) findViewById(R.id.container);
 
         listen();
+
+        soundThread = new SoundThread(this);
+
+        new Thread(soundThread).start();
     }
 
     @Override

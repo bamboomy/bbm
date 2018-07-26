@@ -3,8 +3,10 @@ package bbm.bamboomy.org.bluetoothbatterymonitor;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.BatteryManager;
 import android.util.Log;
@@ -44,9 +46,13 @@ public class SoundThread extends Thread implements MediaPlayer.OnErrorListener {
             int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
             int batteryPct = (int) (level * 100 / (float) scale);
 
-            if(batteryPct>=80){
+            if (batteryPct >= 80) {
 
-                playSound();
+                try {
+                    playSound();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
                 break;
             }
@@ -58,7 +64,7 @@ public class SoundThread extends Thread implements MediaPlayer.OnErrorListener {
             }
         }
 
-        while (M_PLAYER.isPlaying()){
+        while (M_PLAYER.isPlaying()) {
 
             try {
                 Thread.sleep(1000);
@@ -71,12 +77,19 @@ public class SoundThread extends Thread implements MediaPlayer.OnErrorListener {
         M_PLAYER.release();
     }
 
-    private void playSound() {
+    private void playSound() throws IOException {
+
+        AudioManager amanager = (AudioManager) activity.getSystemService(Context.AUDIO_SERVICE);
+        int maxVolume = amanager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
+        amanager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, 0);
 
         M_PLAYER = MediaPlayer.create(activity, R.raw.charge);
         M_PLAYER.setOnErrorListener(this);
-        M_PLAYER.setVolume(1f, 1f);
 
+        M_PLAYER.setAudioStreamType(AudioManager.STREAM_ALARM); // this is important.
+
+        M_PLAYER.prepare();
+        M_PLAYER.setVolume(1f, 1f);
         M_PLAYER.start();
     }
 

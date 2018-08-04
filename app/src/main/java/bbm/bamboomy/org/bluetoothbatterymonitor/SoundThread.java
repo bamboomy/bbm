@@ -6,6 +6,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.AssetFileDescriptor;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.BatteryManager;
@@ -13,6 +14,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
@@ -83,11 +85,19 @@ public class SoundThread extends Thread implements MediaPlayer.OnErrorListener {
         int maxVolume = amanager.getStreamMaxVolume(AudioManager.STREAM_ALARM);
         amanager.setStreamVolume(AudioManager.STREAM_ALARM, maxVolume, 0);
 
-        M_PLAYER = MediaPlayer.create(activity, R.raw.charge);
-        M_PLAYER.setOnErrorListener(this);
+        M_PLAYER = new MediaPlayer();
+
+        //M_PLAYER = MediaPlayer.create(activity, R.raw.charge);
+        //M_PLAYER.setOnErrorListener(this);
 
         M_PLAYER.setAudioStreamType(AudioManager.STREAM_ALARM); // this is important.
 
+        AssetFileDescriptor afd = activity.getResources().openRawResourceFd(R.raw.charge);
+
+        //M_PLAYER.setDataSource(activity, R.raw.charge);
+        M_PLAYER.setDataSource(afd.getFileDescriptor(), afd.getStartOffset(), afd.getLength());
+
+        M_PLAYER.setLooping(false);
         M_PLAYER.prepare();
         M_PLAYER.setVolume(1f, 1f);
         M_PLAYER.start();

@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -26,11 +27,13 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MediaPlayer.OnErrorListener {
 
     private TextView add;
     private BlueToothDialog bluetoothDialog;
     private TableLayout container;
+
+    static boolean PLAY_HERE = false;
 
     private final int REQUEST_ENABLE_BT = 7;
 
@@ -39,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
     private ServerThread myServerThread;
 
     private SoundThread soundThread;
+
+    private MediaPlayer M_PLAYER_BACKGROUND;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +86,16 @@ public class MainActivity extends AppCompatActivity {
         soundThread = new SoundThread(this);
 
         new Thread(soundThread).start();
+
+        if (PLAY_HERE) {
+
+            M_PLAYER_BACKGROUND = MediaPlayer.create(this, R.raw.here);
+            M_PLAYER_BACKGROUND.setOnErrorListener(this);
+            M_PLAYER_BACKGROUND.setLooping(false);
+            M_PLAYER_BACKGROUND.setVolume(100, 100);
+
+            M_PLAYER_BACKGROUND.start();
+        }
     }
 
     @Override
@@ -292,16 +307,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    void connect() {
-
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        if (!mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-        }
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -367,5 +372,16 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
 
         myServerThread.cancel();
+
+        if (M_PLAYER_BACKGROUND != null) {
+
+            M_PLAYER_BACKGROUND.release();
+            M_PLAYER_BACKGROUND = null;
+        }
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
+        return false;
     }
 }
